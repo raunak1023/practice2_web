@@ -1,24 +1,35 @@
-var gulp = require('gulp');
-    uglify = require('gulp-uglify');
+var gulp = require('gulp'),
+    uglify = require('gulp-uglify'),
+    browserSync = require('browser-sync').create(),
+    sass = require('gulp-sass');
     
-
-gulp.task('watch', function(){
-    console.log('gulp watch task...');
-    var watcher = gulp.watch('./app/js/*.js');
-    watcher.on('change', function(event){
-        console.log('File: ' + event.path + ' was changed!');
-    });
+gulp.task('styles', function() {
+    gulp.src('./app/**/*.scss')
+    .pipe(sass())
+    .pipe(uglify())
+    .pipe(gulp.dest('./dist'))
+    .pipe(browserSync.reload({stream: true}));
 });
 
-gulp.task('uglify', function(){
-    console.log('gulp uglify task...');
-    gulp.src('./app/js/**/*.js')
-        .pipe(uglify())
-        .pipe(gulp.dest('./dist'));
+gulp.task('watch', function() {
+    gulp.watch('./app/**/*.js',['scripts']);
+    gulp.watch('./app/**/*.scss',['styles']);
+    gulp.watch('**/*.html').on('change', browserSync.reload);
 });
 
 gulp.task('scripts', function(){
-    console.log('gulp scripts task...');
+    gulp.src('./app/**/*.js')
+        .pipe(uglify())
+        .pipe(gulp.dest('./dist'))
+        .pipe(browserSync.reload({stream: true}));
 });
 
-gulp.task('default', ['scripts', 'watch', 'uglify']);
+gulp.task('serve', function() {
+  browserSync.init({
+        server: {
+            baseDir: "./"
+        }
+    });
+});
+
+gulp.task('default', ['styles', 'scripts', 'watch', 'serve']);
